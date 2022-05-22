@@ -2,7 +2,7 @@ import datetime
 from datetime import date, timedelta
 import pytest
 
-from model import allocate, Batch, OrderLine
+from model import allocate, Batch, OrderLine, OutOfStock
 
 today = date.today()
 tomorrow = today + timedelta(days=1)
@@ -91,6 +91,15 @@ def test_prefers_earlier_batches():
     assert early_batch.available_units == 15
     assert medium_batch.available_units == 20
     assert late_batch.available_units == 20
+
+
+def test_raises_out_of_stock_exception_if_cannot_allocate():
+    test_batch = Batch("early_batch", "small_chair", 20, eta=today)
+
+    allocate(OrderLine("latest_order", "small_chair", 20), [test_batch])
+
+    with pytest.raises(OutOfStock, match="small_chair"):
+        allocate(OrderLine("latest_order", "small_chair", 100), [test_batch])
 
 
 if __name__ == "__main__":
