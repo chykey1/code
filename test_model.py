@@ -1,7 +1,8 @@
+import datetime
 from datetime import date, timedelta
 import pytest
 
-from model import Batch, OrderLine
+from model import allocate, Batch, OrderLine
 
 today = date.today()
 tomorrow = today + timedelta(days=1)
@@ -69,11 +70,27 @@ def test_allocation_idempotency():
 
 
 def test_prefers_warehouse_batches_to_shipments():
-    pytest.fail("todo")
+    in_stock_batch = Batch("in_stock_batch", "small_chair", 20, None)
+    shipment_batch = Batch("shipment_batch", "small_chair", 20, eta=tomorrow)
+    line = OrderLine("latest_order", "small_chair", 5)
+
+    allocate(line, [in_stock_batch, shipment_batch])
+
+    assert in_stock_batch.available_units == 15
+    assert shipment_batch.available_units == 20
 
 
 def test_prefers_earlier_batches():
-    pytest.fail("todo")
+    early_batch = Batch("early_batch", "small_chair", 20, today)
+    medium_batch = Batch("medium_batch", "small_chair", 20, tomorrow)
+    late_batch = Batch("late_batch", "small_chair", 20, eta=later)
+    line = OrderLine("latest_order", "small_chair", 5)
+
+    allocate(line, [early_batch, medium_batch, late_batch])
+
+    assert early_batch.available_units == 15
+    assert medium_batch.available_units == 20
+    assert late_batch.available_units == 20
 
 
 if __name__ == "__main__":

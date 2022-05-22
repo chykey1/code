@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import Optional
+from typing import Optional, List, Set
 
 
 @dataclass(frozen=True)
@@ -17,6 +17,22 @@ class Batch:
         self.eta = eta
         self._purchased_units = quantity
         self._allocations = set()
+
+    def __eq__(self, other):
+        if not isinstance(other, Batch):
+            return False
+        return other.reference == self.reference
+
+    def __hash__(self):
+        return hash(self.reference)
+
+    def __gt__(self, other):
+        if self.eta is None:
+            return False
+        if other.eta is None:
+            return True
+        else:
+            return self.eta > other.eta
 
     def allocate(self, line: OrderLine):
         if self.can_allocate(line):
@@ -36,3 +52,10 @@ class Batch:
 
     def can_allocate(self, line: OrderLine) -> bool:
         return self.available_units >= line.quantity and self.sku == line.sku
+
+
+def allocate(line: OrderLine, batches: List[Batch]) -> str:
+
+    batch = next(b for b in sorted(batches) if b.can_allocate(line))
+    batch.allocate(line)
+    return batch.reference
