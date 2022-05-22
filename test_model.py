@@ -9,7 +9,12 @@ later = tomorrow + timedelta(days=10)
 
 
 def test_allocating_to_a_batch_reduces_the_available_quantity():
-    pytest.fail("todo")
+    test_batch = batch(reference="Batch-0001", item="small_chair", quantity=30, eta=date.today())
+    line = order_line(reference='my_reference', item="small_chair", quantity=7)
+
+    batch.allocate(line)
+
+    assert batch.available_units == 18
 
 
 def test_can_allocate_if_available_greater_than_required():
