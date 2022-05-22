@@ -13,9 +13,9 @@ class OrderLine:
 class Batch:
     def __init__(self, reference: str, sku: str, quantity: int, eta: Optional[date]):
         self.reference = reference
-        self.sku = str
+        self.sku = sku
         self.eta = eta
-        self._purchased_quantity = quantity
+        self._purchased_units = quantity
         self._allocations = set()
 
     def allocate(self, line: OrderLine):
@@ -32,7 +32,7 @@ class Batch:
 
     @property
     def available_units(self) -> int:
-        return self._purchased_quantity - self.allocated_units
+        return self._purchased_units - self.allocated_units
 
     def can_allocate(self, line: OrderLine) -> bool:
         return self.available_units >= line.quantity and self.sku == line.sku
