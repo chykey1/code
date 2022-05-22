@@ -53,6 +53,13 @@ def test_cannot_allocate_if_skus_do_not_match():
     assert test_batch.can_allocate(different_sku_line) is False
 
 
+def test_can_only_deallocate_allocated_lines():
+    test_batch, unallocated_line = make_test_batch_and_line("small_chair", 30, 7)
+    test_batch.deallocate(unallocated_line)
+
+    assert test_batch.available_units == 30
+
+
 def test_prefers_warehouse_batches_to_shipments():
     pytest.fail("todo")
 
